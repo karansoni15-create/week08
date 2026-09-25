@@ -159,10 +159,9 @@ jobs:
         run: |
           docker build \
             --platform linux/amd64 \
-            -t ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:${{ github.sha }} \
-            ./${{ matrix.service }}
+            -t "${{ vars.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}" \
+            "./${{ matrix.service }}"
 
       - name: Push Docker image with commit SHA
         run: |
-          docker push \
-            ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:${{ github.sha }}
+          docker push "${{ vars.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}"
