@@ -197,3 +197,14 @@ cython_debug/
 .cursorindexingignore
 
 node_modules/
+
+# Terraform local data and credentials (commit only the .tf configuration)
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfvars
+terraform/*.tfvars.json
+terraform/*.tfplan
+terraform/tfplan
+terraform/crash.log
+terraform/crash.*.log

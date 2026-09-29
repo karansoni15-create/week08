@@ -4,6 +4,8 @@ import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi import Request, Response
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, generate_latest
 from sqlalchemy import select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -20,6 +22,12 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+HTTP_REQUESTS = Counter(
+    "koalatech_http_requests_total",
+    "HTTP requests handled by the KoalaTech user service",
+    ["method", "route", "status"],
+)
 
 
 def initialise_database() -> None:
@@ -118,6 +126,25 @@ app = FastAPI(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+
+
+@app.middleware("http")
+async def record_http_requests(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path != "/metrics":
+        route = request.scope.get("route")
+        route_name = getattr(route, "path", "unmatched")
+        HTTP_REQUESTS.labels(
+            method=request.method,
+            route=route_name,
+            status=str(response.status_code),
+        ).inc()
+    return response
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics() -> Response:
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get(

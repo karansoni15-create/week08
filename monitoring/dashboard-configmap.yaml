@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: koalatech-operations-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  koalatech-operations.json: |
+    {
+      "uid": "koalatech-ops",
+      "title": "KoalaTech Operations",
+      "tags": ["sit722", "koalatech"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "time": {"from": "now-1h", "to": "now"},
+      "panels": [
+        {
+          "id": 1,
+          "type": "timeseries",
+          "title": "Available application replicas by namespace",
+          "gridPos": {"h": 9, "w": 12, "x": 0, "y": 0},
+          "datasource": "Prometheus",
+          "targets": [{
+            "expr": "sum by (namespace) (kube_deployment_status_replicas_available{namespace=~\"staging|production\"})",
+            "legendFormat": "{{namespace}}",
+            "refId": "A"
+          }]
+        },
+        {
+          "id": 2,
+          "type": "timeseries",
+          "title": "User service HTTP requests per second",
+          "gridPos": {"h": 9, "w": 12, "x": 12, "y": 0},
+          "datasource": "Prometheus",
+          "targets": [{
+            "expr": "sum by (namespace) (rate(koalatech_http_requests_total[5m]))",
+            "legendFormat": "{{namespace}}",
+            "refId": "A"
+          }]
+        }
+      ]
+    }
